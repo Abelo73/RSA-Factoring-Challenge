@@ -1,33 +1,50 @@
-#include "factor.h"
+#!/usr/bin/env bash
+# is a factors challenge
 
-/**
- * main - main function
- *
- *
- * Return: void
- */
-int main(int argc, char *argv[])
+check_factor()
 {
-	FILE *fptr;
-	size_t count;
-	ssize_t line;
-	char *buffer = NULL;
+	if [ $# -ne 3 ];
+        then
+                args=("$@")
+                count=0
+                num2=1
+                for a in ${args[*]};
+                do
+                        if [ $count -gt 1 ];
+                        then
+                                num2=$(echo $a*$num2 | bc)
+                        fi
+                        count=$((count + 1))
+                done
+        else
+                num2=$3
+        fi
 
+        num1=$2
+        num=$(echo "$1" | tr ':' '=')
 
-	if (argc != 2)
-	{
-		fprintf(stderr, "Usage: factor <filename>\n");
-		exit(EXIT_FAILURE);
-	}
-	fptr = fopen(argv[1], "r");
-	if (fptr == NULL)
-	{
-		fprintf(stderr, "Error: can't open file %s\n", argv[1]);
-		exit(EXIT_FAILURE);
-	}
-	while((line = getline(&buffer, &count, fptr)) != -1)
-	{
-		factorize(buffer);
-	}
-return (0);
+        result=$(echo "if($num2 > $num1) 1 else 0" | bc)
+	        if ((result == 1)); then
+		        numcp=$num1
+		        num1=$num2
+		        num2=$numcp
+                fi
+
+        echo "$num$num1*$num2"
+}
+
+if [ $# -ne 1 ]
+then
+        echo 'Usage: factors <file>'
+        exit 1
+else
+
+        while read i
+        do
+
+                result=$(factor "$i")
+                check_factor $result
+
+        done < "$1"
+fi
 }
